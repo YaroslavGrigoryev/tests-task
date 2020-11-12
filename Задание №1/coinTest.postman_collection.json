@@ -1,0 +1,177 @@
+{
+	"info": {
+		"_postman_id": "d131f4de-942a-4ea1-986e-52d990170bbd",
+		"name": "coinTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=10&convert=USD",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f38a73df-9e76-4c66-8560-665e4100b3c1",
+						"exec": [
+							"let jsonData = JSON.parse(responseBody); // получение JSON объекта от сервера и парсинг в обычный JavaScript объект",
+							"",
+							"let currentDate = new Date();",
+							"    let date = currentDate.getDate();",
+							"    let month = currentDate.getMonth(); ",
+							"    let year = currentDate.getFullYear();",
+							"    let dateStringToday = date + \"-\" +(month + 1) + \"-\" + year; // сегодняшняя дата ",
+							"",
+							"let timestamp = new Date(jsonData.status.timestamp);",
+							"    let timestampDate = currentDate.getDate();",
+							"    let timestampMonth = currentDate.getMonth(); ",
+							"    let timestampYear = currentDate.getFullYear();",
+							"    let timestampDateStringToday = date + \"-\" +(month + 1) + \"-\" + year; // дата из responce",
+							"",
+							"let size = Buffer.byteLength(JSON.stringify(responseBody))",
+							"let kiloBytes = size / 1024;",
+							"",
+							"pm.test(\"Response time is less than 500ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);",
+							"    console.log(pm.response.responseTime);",
+							"});",
+							"",
+							"pm.test(\"If the date is actual\", function () {",
+							"    pm.expect(dateStringToday).to.be.a('string'); // является ли строкой",
+							"    pm.expect(timestampDateStringToday).to.be.a('string'); // является ли строкой",
+							"    pm.expect(timestampDateStringToday).to.eql(dateStringToday); // провекра двух строк",
+							"});",
+							"",
+							"pm.test(\"Check the size of package data\", function(){",
+							"    let checkSize = kiloBytes < 10 ? true : false; // false or true",
+							"",
+							"    // if(kiloBytes < 10){",
+							"    //     return true;",
+							"    // }else{",
+							"    //     return false;",
+							"    // }",
+							"",
+							"    pm.expect(checkSize).to.be.true;",
+							"});",
+							"",
+							"//500 ms is a maximum allowed value according to requirements ",
+							"let maximumResponseTime = 450;",
+							"//8 is a number of sent requests according to requirements ",
+							"let iterations = 8;",
+							"//10 ms is a delay between requests according to requirements ",
+							"let delay = 10;",
+							"//responseTimes is an array for collecting response time values",
+							"let responseTimes = [];",
+							"",
+							"function sortNumber(a,b) {",
+							"    return a - b;",
+							"}",
+							"",
+							"// функция рассчитывания перцентиль времени ",
+							"function quantile(array, percentile) {",
+							"    array.sort(sortNumber);",
+							"    index = percentile/100. * (array.length-1);",
+							"    if (Math.floor(index) == index) {",
+							"     result = array[index];",
+							"    } else {",
+							"        j = Math.floor(index)",
+							"        fraction = index - j;",
+							"        result = array[j] + (array[j+1] - array[j]) * fraction;",
+							"    }",
+							"    return result;",
+							"}",
+							"",
+							"let i = 0;",
+							"function sendRequest() {",
+							"    pm.sendRequest({",
+							"        url: \"https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=10&convert=USD\",",
+							"        method: 'GET',",
+							"        header: 'X-CMC_PRO_API_KEY:bb2b929e-e46d-4ed0-8b31-1e520c3cde44'",
+							"    }, function (err, res) {",
+							"",
+							"        pm.test(\"Response time is \" + res.responseTime, function (){",
+							"            pm.expect(err).to.equal(null);",
+							"            pm.expect(res).to.have.property('code', 200);",
+							"            responseTimes.push(res.responseTime);",
+							"        });",
+							"",
+							"        if (i < iterations - 1) {",
+							"            i++;",
+							"            setTimeout(sendRequest, delay); // выполнениние с задержкой ",
+							"        } ",
+							"        else {",
+							"            percentile80ResponseTime = quantile(responseTimes, 80);",
+							"            pm.test(\"80 перцентиль времени ответа \" + percentile80ResponseTime + \" меньше чем \" + maximumResponseTime + \", число итераций \" + iterations, function () {",
+							"                pm.expect(percentile80ResponseTime).to.be.below(maximumResponseTime);",
+							"            });",
+							"        }",
+							"    });",
+							"}",
+							"sendRequest();",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "bb2b929e-e46d-4ed0-8b31-1e520c3cde44",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "X-CMC_PRO_API_KEY",
+							"type": "string"
+						},
+						{
+							"key": "in",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?start=1&limit=10&convert=USD",
+					"protocol": "https",
+					"host": [
+						"pro-api",
+						"coinmarketcap",
+						"com"
+					],
+					"path": [
+						"v1",
+						"cryptocurrency",
+						"listings",
+						"latest"
+					],
+					"query": [
+						{
+							"key": "start",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "convert",
+							"value": "USD"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
